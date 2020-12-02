@@ -2,7 +2,7 @@ package main
 
 import "testing"
 
-func TestPipe(t *testing.T) {
+func TestStat(t *testing.T) {
 	pc := newPipeCommand("key=255&op=stat")
 	t.Logf("%+v", pc.params)
 	err := pc.dispatch()
@@ -20,4 +20,13 @@ func TestPipe(t *testing.T) {
 		return
 	}
 	t.Logf("test shm=256 ok")
+}
+
+func BenchmarkStat(b *testing.B) {
+	pc := newPipeCommand("key=255&op=stat")
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		pc.dispatch()
+	}
 }

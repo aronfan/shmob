@@ -2,11 +2,18 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
 	sc "github.com/aronfan/shmcore"
 )
+
+type bstat struct {
+	bytes uint32
+	count uint32
+	frees uint32
+}
 
 type pipecmd struct {
 	params map[string]string
@@ -34,13 +41,13 @@ func (pc *pipecmd) dispatch() error {
 	}
 
 	switch op {
-	case "dump":
-		return pc.dump()
+	case "stat":
+		return pc.stat()
 	}
 	return nil
 }
 
-func (pc *pipecmd) dump() error {
+func (pc *pipecmd) stat() error {
 	ok := sc.ResumeEnabled()
 	if !ok {
 		return fmt.Errorf("resume not enabled")
@@ -64,6 +71,42 @@ func (pc *pipecmd) dump() error {
 	}
 	if bytes == 0 {
 		return fmt.Errorf("shm not exist")
+	}
+
+	seg, err := sc.NewSegment(key, bytes)
+	if err != nil {
+		return err
+	}
+
+	err = seg.Attach()
+	if err != nil {
+		return err
+	}
+
+	m := make(map[uint16]*bstat)
+	seg.Observe(
+		func(shead *sc.SegmentHead) {
+		},
+		func(index uint16, bhead *sc.BucketHead) {
+			m[index] = &bstat{bytes: bhead.GetBytes(), count: bhead.GetCount(), frees: 0}
+		},
+		func(hindex uint16, uindex uint32, unit *sc.BucketUnit) {
+			l := unit.GetLen()
+			if l == 0 {
+				stat, ok := m[hindex]
+				if ok {
+					stat.frees++
+				}
+			}
+		},
+	)
+
+	seg.Detach()
+
+	fmt.Fprintf(os.Stderr, "shm key=%d\n", key)
+	fmt.Fprintln(os.Stderr, "bytes\tfree\ttotal")
+	for _, v := range m {
+		fmt.Printf("%d\t%d\t%d\n", v.bytes, v.frees, v.count)
 	}
 
 	return nil

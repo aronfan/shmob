@@ -65,15 +65,12 @@ func (pc *pipecmd) stat() error {
 	}
 
 	key := uint32(k)
-	bytes, err := sc.GetShmBytesByKey(key)
+	err = sc.IsShmExist(key)
 	if err != nil {
 		return err
 	}
-	if bytes == 0 {
-		return fmt.Errorf("shm not exist")
-	}
 
-	seg, err := sc.NewSegment(key, bytes)
+	seg, err := sc.NewSegment(key, 0)
 	if err != nil {
 		return err
 	}

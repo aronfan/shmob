@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	e = flag.String("e", "", "pipe mode, such as \"key=1&op=stat\"")
+	e = flag.String("e", "", "pipe mode, such as \"shmkey=1&op=stat\"")
 	h = flag.Bool("h", false, "display help")
 )
 

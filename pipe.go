@@ -52,25 +52,25 @@ func (pc *pipecmd) stat() error {
 	if !ok {
 		return fmt.Errorf("resume not enabled")
 	}
-	s, ok := pc.params["key"]
+	s, ok := pc.params["shmkey"]
 	if !ok {
-		return fmt.Errorf("key not exist")
+		return fmt.Errorf("shmkey not exist")
 	}
 	if s == "" {
-		return fmt.Errorf("key is empty")
+		return fmt.Errorf("shmkey is empty")
 	}
 	k, err := strconv.Atoi(s)
 	if err != nil {
 		return err
 	}
 
-	key := uint32(k)
-	err = sc.IsShmExist(key)
+	shmkey := uint32(k)
+	err = sc.IsShmExist(shmkey)
 	if err != nil {
 		return err
 	}
 
-	seg, err := sc.NewSegment(key, 0)
+	seg, err := sc.NewSegment(shmkey, 0)
 	if err != nil {
 		return err
 	}
@@ -100,7 +100,7 @@ func (pc *pipecmd) stat() error {
 
 	seg.Detach()
 
-	fmt.Fprintf(os.Stderr, "shm key=%d\n", key)
+	fmt.Fprintf(os.Stderr, "shmkey=%d\n", shmkey)
 	fmt.Fprintln(os.Stderr, "bytes\tfree\ttotal")
 	for _, v := range m {
 		fmt.Printf("%d\t%d\t%d\n", v.bytes, v.frees, v.count)

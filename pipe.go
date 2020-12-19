@@ -48,9 +48,9 @@ func (pc *pipecmd) dispatch() error {
 }
 
 func (pc *pipecmd) stat() error {
-	ok := sc.ResumeEnabled()
+	ok := sc.CanObserve()
 	if !ok {
-		return fmt.Errorf("resume not enabled")
+		return fmt.Errorf("observe not enabled")
 	}
 	s, ok := pc.params["shmkey"]
 	if !ok {
@@ -65,7 +65,7 @@ func (pc *pipecmd) stat() error {
 	}
 
 	shmkey := uint32(k)
-	err = sc.IsShmExist(shmkey)
+	err = sc.Exist(shmkey)
 	if err != nil {
 		return err
 	}
